@@ -54,7 +54,43 @@ def data_preprocessing():
     all_stocks_5yr = all_stocks_5yr.sort_values(["Name","date"]).reset_index(drop=True)
     Historical_prices = Historical_prices.sort_values("Date").reset_index( drop = True )
     
-    return all_stocks_5yr , Historical_prices    
+    return all_stocks_5yr , Historical_prices
+
+
+def calculete_rsi(prices , period = 14):
+    delta = prices.diff()
+    
+    gains = delta.clip(lower=0)
+    losses = -delta.clip(upper=0)
+    
+    average_gain = gains.rolling(window=period).mean()
+    average_losses = losses.rolling(window=period).mean()
+    
+    rs = average_gain / average_losses
+    
+    rsi = 100 -(100 / (1 + rs))
+    
+    return rsi
+
+def calculate_macd(prices):
+    ema_12 = prices.ewm(span = 12,adjust=False).mean()
+    ema_26 = prices.ewm(span = 26, adjust = False).mean()
+    return ema_12 - ema_26    
+
+def features_engineering():
+    all_stocks_5yr , Historical_prices = data_preprocessing()
+    
+    all_stocks_5yr["RSI_14"] = (all_stocks_5yr.groupby("Name")["close"].transform(calculete_rsi))
+    
+    
+    all_stocks_5yr["MACD"] = (all_stocks_5yr.groupby("Name")["close"].transform(calculate_macd))
+
+    
+    print(all_stocks_5yr.columns)
+    
+features_engineering()
+    
+    
     
     
     
@@ -64,9 +100,7 @@ def data_preprocessing():
 
     
 
-all_stocks_5yr , Historical_prices = data_preprocessing()
 
-print(all_stocks_5yr.dtypes)
-print(Historical_prices.dtypes)
+
 
 
