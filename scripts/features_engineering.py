@@ -72,21 +72,60 @@ def calculete_rsi(prices , period = 14):
     
     return rsi
 
+
+
 def calculate_macd(prices):
     ema_12 = prices.ewm(span = 12,adjust=False).mean()
     ema_26 = prices.ewm(span = 26, adjust = False).mean()
-    return ema_12 - ema_26    
+    return ema_12 - ema_26
+
+def calculate_bollinger_bandwidth(prices):
+    sam_20 = prices.rolling(window=20).mean()
+    
+    std_20 = prices.rolling(window=20).mean()
+    
+    upper_band = sam_20 + 2 * std_20
+    
+    lower_band = sam_20 - 2 * std_20
+    
+    bandwith = (upper_band - lower_band) / sam_20
+    
+    return bandwith
+
 
 def features_engineering():
-    all_stocks_5yr , Historical_prices = data_preprocessing()
+    all_stocks_5yr , _ = data_preprocessing()
     
     all_stocks_5yr["RSI_14"] = (all_stocks_5yr.groupby("Name")["close"].transform(calculete_rsi))
     
-    
     all_stocks_5yr["MACD"] = (all_stocks_5yr.groupby("Name")["close"].transform(calculate_macd))
-
     
-    print(all_stocks_5yr.columns)
+    all_stocks_5yr["Bollinger_Bandwidth"] = (all_stocks_5yr.groupby("Name")["close"].transform(calculate_bollinger_bandwidth))
+    
+    
+    # Rendement du jour suivant au jour d'après, pour chaque action
+    all_stocks_5yr["future_return"] = (
+        all_stocks_5yr.groupby("Name")["close"]
+        .transform(lambda prices: prices.shift(-2) / prices.shift(-1) - 1)
+    )
+
+    #    Target : 1 si le rendement futur est positif, sinon 0
+    all_stocks_5yr["target"] = (
+        all_stocks_5yr["future_return"] > 0
+    ).astype(int)
+    
+    features = [
+    "RSI_14",
+    "MACD",
+    "Bollinger_Bandwidth"
+    ]
+    
+   
+    all_stocks_5yr = all_stocks_5yr.dropna(subset=features + ["future_return"]).copy()
+    return all_stocks_5yr
+   
+    
+
     
 features_engineering()
     
