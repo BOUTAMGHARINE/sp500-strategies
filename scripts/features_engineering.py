@@ -123,6 +123,7 @@ def features_engineering():
    
     all_stocks_5yr = all_stocks_5yr.dropna(subset=features + ["future_return"]).copy()
     return all_stocks_5yr
+    
    
     
 
