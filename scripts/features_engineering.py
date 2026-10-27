@@ -106,12 +106,12 @@ def features_engineering():
     # Rendement du jour suivant au jour d'après, pour chaque action
     all_stocks_5yr["future_return"] = (
         all_stocks_5yr.groupby("Name")["close"]
-        .transform(lambda prices: prices.shift(-2) / prices.shift(-1) - 1)
+        .transform(lambda prices: prices.shift(-2) / prices.shift(-1) )
     )
 
     #    Target : 1 si le rendement futur est positif, sinon 0
     all_stocks_5yr["target"] = (
-        all_stocks_5yr["future_return"] > 0
+        all_stocks_5yr["future_return"] > 1
     ).astype(int)
     
     features = [

@@ -25,7 +25,8 @@ def main():
     features = [
         "RSI_14",
         "MACD",
-        "Bollinger_Bandwidth"
+        "Bollinger_Bandwidth",
+        "future_return"
     ]
 
     X_train = train[features]
